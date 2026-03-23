@@ -1,4 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import html2canvas from "html2canvas";
+// @ts-expect-error no types
+import GIF from "gif.js";
 
 const ALPHABET = [
   "А","Б","В","Г","Д","Е","Ё","Ж","З","И","Й","К","Л","М","Н","О","П","Р","С","Т","У","Ф","Х","Ц","Ч","Ш","Щ","Ъ","Ы","Ь","Э","Ю","Я"
@@ -171,8 +174,37 @@ export default function Index() {
     });
   };
 
+  const [gifStatus, setGifStatus] = useState<"idle" | "recording" | "processing">("idle");
+  const pageRef = useRef<HTMLDivElement>(null);
+
+  const downloadGif = useCallback(async () => {
+    if (!pageRef.current) return;
+    setGifStatus("recording");
+
+    const gif = new GIF({ workers: 2, quality: 10, width: 600, height: 500, workerScript: "/node_modules/gif.js/dist/gif.worker.js" });
+    const frames = 20;
+
+    for (let i = 0; i < frames; i++) {
+      await new Promise(r => setTimeout(r, 150));
+      const canvas = await html2canvas(pageRef.current!, { scale: 0.75, useCORS: true, logging: false });
+      gif.addFrame(canvas, { delay: 150, copy: true });
+    }
+
+    setGifStatus("processing");
+    gif.on("finished", (blob: Blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "азбука-прощай.gif";
+      a.click();
+      URL.revokeObjectURL(url);
+      setGifStatus("idle");
+    });
+    gif.render();
+  }, []);
+
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: "linear-gradient(135deg, #fff9c4 0%, #ffd6e0 30%, #c8f5ff 60%, #d4f5c4 100%)" }}>
+    <div ref={pageRef} className="min-h-screen relative overflow-hidden" style={{ background: "linear-gradient(135deg, #fff9c4 0%, #ffd6e0 30%, #c8f5ff 60%, #d4f5c4 100%)" }}>
 
       {/* Воздушные шары */}
       {balloons.map(b => (
@@ -389,6 +421,33 @@ export default function Index() {
               }}
             />
           </div>
+        </div>
+
+        {/* Кнопка скачать GIF */}
+        <div style={{ textAlign: "center", marginBottom: "12px" }}>
+          <button
+            onClick={downloadGif}
+            disabled={gifStatus !== "idle"}
+            style={{
+              fontFamily: "'Rubik', sans-serif",
+              fontWeight: 700,
+              fontSize: "1rem",
+              padding: "10px 24px",
+              borderRadius: "50px",
+              border: "none",
+              background: gifStatus !== "idle"
+                ? "#ccc"
+                : "linear-gradient(135deg, #FF6B2B, #9C27B0)",
+              color: "#fff",
+              cursor: gifStatus !== "idle" ? "not-allowed" : "pointer",
+              boxShadow: "0 4px 16px rgba(100,60,200,0.3)",
+              transition: "all 0.2s",
+            }}
+          >
+            {gifStatus === "idle" && "🎬 Скачать как GIF"}
+            {gifStatus === "recording" && "⏺ Записываю..."}
+            {gifStatus === "processing" && "⚙️ Создаю GIF..."}
+          </button>
         </div>
 
         {/* Текст без квадратика */}
