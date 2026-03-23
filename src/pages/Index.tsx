@@ -316,7 +316,7 @@ export default function Index() {
           <div style={{
             position: "absolute",
             top: "18%",
-            left: "38%",
+            left: "26%",
             transform: "translate(-50%, -50%)",
             zIndex: 5,
             animation: "bookFloat 3s ease-in-out infinite",
