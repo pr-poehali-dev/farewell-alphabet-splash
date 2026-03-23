@@ -440,55 +440,7 @@ export default function Index() {
           </div>
         </div>
 
-        {/* Кнопки скачать */}
-        <div style={{ textAlign: "center", marginBottom: "12px", display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-          <button
-            onClick={downloadPng}
-            disabled={pngLoading}
-            style={{
-              fontFamily: "'Rubik', sans-serif",
-              fontWeight: 700,
-              fontSize: "1rem",
-              padding: "10px 24px",
-              borderRadius: "50px",
-              border: "none",
-              background: pngLoading ? "#ccc" : "linear-gradient(135deg, #4CAF50, #2196F3)",
-              color: "#fff",
-              cursor: pngLoading ? "not-allowed" : "pointer",
-              boxShadow: "0 4px 16px rgba(33,150,243,0.3)",
-              transition: "all 0.2s",
-            }}
-          >
-            {pngLoading ? "⏳ Сохраняю..." : "🖼 Скачать как картинку"}
-          </button>
-        </div>
 
-        {/* Кнопка скачать GIF */}
-        <div style={{ textAlign: "center", marginBottom: "12px" }}>
-          <button
-            onClick={downloadGif}
-            disabled={gifStatus !== "idle"}
-            style={{
-              fontFamily: "'Rubik', sans-serif",
-              fontWeight: 700,
-              fontSize: "1rem",
-              padding: "10px 24px",
-              borderRadius: "50px",
-              border: "none",
-              background: gifStatus !== "idle"
-                ? "#ccc"
-                : "linear-gradient(135deg, #FF6B2B, #9C27B0)",
-              color: "#fff",
-              cursor: gifStatus !== "idle" ? "not-allowed" : "pointer",
-              boxShadow: "0 4px 16px rgba(100,60,200,0.3)",
-              transition: "all 0.2s",
-            }}
-          >
-            {gifStatus === "idle" && "🎬 Скачать как GIF"}
-            {gifStatus === "recording" && "⏺ Записываю..."}
-            {gifStatus === "processing" && "⚙️ Создаю GIF..."}
-          </button>
-        </div>
 
         {/* Текст без квадратика */}
         <div style={{ textAlign: "center", marginTop: "16px" }}>
