@@ -229,82 +229,90 @@ export default function Index() {
           </p>
         </div>
 
-        {/* Книга в центре + буквы вокруг */}
+        {/* Книга в центре + буквы в разнобой вокруг */}
         <div style={{
           position: "relative",
-          width: "min(780px, 100%)",
+          width: "min(820px, 100%)",
+          height: "clamp(420px, 65vw, 620px)",
           marginBottom: "32px",
         }}>
-          {/* Буквы — сетка вокруг книги */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(11, 1fr)",
-            gridTemplateRows: "repeat(7, 1fr)",
-            gap: "6px",
-            width: "100%",
-          }}>
-            {ALPHABET.map((letter, idx) => {
-              const isHovered = hoveredIdx === idx;
-              const isClicked = clickedLetter === letter;
-              const color = RAINBOW[idx];
+          {/* Буквы — абсолютно, в разнобой вокруг книги */}
+          {ALPHABET.map((letter, idx) => {
+            const isHovered = hoveredIdx === idx;
+            const isClicked = clickedLetter === letter;
+            const color = RAINBOW[idx];
 
-              // Центральная зона (строки 2-6, колонки 4-8) — там книга
-              const col = (idx % 11) + 1;
-              const row = Math.floor(idx / 11) + 1;
-              const inBookZone = row >= 2 && row <= 6 && col >= 4 && col <= 8;
+            // Позиции в разнобой по кругу, избегая центр (35-65% по x, 30-70% по y)
+            const positions = [
+              { x: 2,  y: 2  }, { x: 12, y: 0  }, { x: 22, y: 3  }, { x: 78, y: 1  },
+              { x: 88, y: 3  }, { x: 94, y: 0  }, { x: 5,  y: 14 }, { x: 90, y: 12 },
+              { x: 1,  y: 26 }, { x: 92, y: 24 }, { x: 3,  y: 38 }, { x: 91, y: 36 },
+              { x: 0,  y: 50 }, { x: 93, y: 50 }, { x: 2,  y: 62 }, { x: 92, y: 63 },
+              { x: 4,  y: 74 }, { x: 90, y: 75 }, { x: 8,  y: 86 }, { x: 88, y: 87 },
+              { x: 18, y: 93 }, { x: 30, y: 96 }, { x: 42, y: 94 }, { x: 54, y: 96 },
+              { x: 65, y: 93 }, { x: 76, y: 90 }, { x: 32, y: 4  }, { x: 44, y: 2  },
+              { x: 56, y: 5  }, { x: 68, y: 3  }, { x: 15, y: 50 }, { x: 80, y: 50 },
+              { x: 48, y: 92 },
+            ];
+            const pos = positions[idx] || { x: idx * 3 % 90, y: idx * 7 % 90 };
+            const rotate = [-18, 12, -8, 22, -15, 8, -25, 18, -10, 20, -5, 15, -20, 10, -12, 25, -7, 16, -22, 9, -14, 19, -6, 23, -11, 17, -3, 21, -16, 7, -24, 13, -9][idx] || 0;
+            const size = [52, 48, 56, 44, 58, 46, 54, 50, 52, 48, 56, 44, 58, 46, 54, 50, 52, 48, 56, 44, 58, 46, 54, 50, 52, 48, 56, 44, 58, 46, 54, 50, 52][idx] || 50;
 
-              return (
-                <button
-                  key={letter}
-                  onClick={() => handleLetterClick(letter)}
-                  onMouseEnter={() => setHoveredIdx(idx)}
-                  onMouseLeave={() => setHoveredIdx(null)}
-                  style={{
-                    fontFamily: "'Rubik', sans-serif",
-                    fontWeight: 900,
-                    fontSize: isClicked ? "1.8rem" : isHovered ? "1.5rem" : "1.25rem",
-                    width: "100%",
-                    aspectRatio: "1",
-                    borderRadius: "16px",
-                    border: `3px solid ${color}`,
-                    background: isHovered || isClicked
-                      ? `linear-gradient(135deg, ${color}ee, ${color}bb)`
-                      : `${color}1a`,
-                    color: isHovered || isClicked ? "#fff" : color,
-                    cursor: "pointer",
-                    transition: "all 0.2s cubic-bezier(.34,1.56,.64,1)",
-                    transform: isClicked
-                      ? "scale(1.4) rotate(-6deg)"
-                      : isHovered
-                        ? "scale(1.18) rotate(4deg)"
-                        : "scale(1)",
-                    boxShadow: isHovered || isClicked
-                      ? `0 8px 24px ${color}88`
-                      : `0 3px 10px ${color}33`,
-                    outline: "none",
-                    position: "relative",
-                    overflow: "hidden",
-                    userSelect: "none",
-                    visibility: inBookZone ? "hidden" : "visible",
-                    pointerEvents: inBookZone ? "none" : "auto",
-                  }}
-                >
-                  {isClicked && (
-                    <span style={{
-                      position: "absolute", inset: 0,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: "1.2rem",
-                      animation: "popStar 0.65s ease-out forwards",
-                      pointerEvents: "none",
-                    }}>⭐</span>
-                  )}
-                  {letter}
-                </button>
-              );
-            })}
-          </div>
+            return (
+              <button
+                key={letter}
+                onClick={() => handleLetterClick(letter)}
+                onMouseEnter={() => setHoveredIdx(idx)}
+                onMouseLeave={() => setHoveredIdx(null)}
+                style={{
+                  position: "absolute",
+                  left: `${pos.x}%`,
+                  top: `${pos.y}%`,
+                  fontFamily: "'Rubik', sans-serif",
+                  fontWeight: 900,
+                  fontSize: isClicked ? "1.6rem" : isHovered ? "1.4rem" : "1.1rem",
+                  width: `${size}px`,
+                  height: `${size}px`,
+                  borderRadius: "14px",
+                  border: `3px solid ${color}`,
+                  background: isHovered || isClicked
+                    ? `linear-gradient(135deg, ${color}ee, ${color}bb)`
+                    : `${color}22`,
+                  color: isHovered || isClicked ? "#fff" : color,
+                  cursor: "pointer",
+                  transition: "all 0.2s cubic-bezier(.34,1.56,.64,1)",
+                  transform: isClicked
+                    ? `rotate(${rotate}deg) scale(1.5)`
+                    : isHovered
+                      ? `rotate(${rotate}deg) scale(1.2)`
+                      : `rotate(${rotate}deg) scale(1)`,
+                  boxShadow: isHovered || isClicked
+                    ? `0 8px 24px ${color}88`
+                    : `0 3px 10px ${color}44`,
+                  outline: "none",
+                  overflow: "hidden",
+                  userSelect: "none",
+                  zIndex: isHovered || isClicked ? 8 : 3,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {isClicked && (
+                  <span style={{
+                    position: "absolute", inset: 0,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "1.1rem",
+                    animation: "popStar 0.65s ease-out forwards",
+                    pointerEvents: "none",
+                  }}>⭐</span>
+                )}
+                {letter}
+              </button>
+            );
+          })}
 
-          {/* Книга поверх сетки, по центру */}
+          {/* Книга — строго по центру */}
           <div style={{
             position: "absolute",
             top: "50%",
@@ -314,28 +322,17 @@ export default function Index() {
             animation: "bookFloat 3s ease-in-out infinite",
             pointerEvents: "none",
           }}>
-            <div style={{ position: "relative", display: "inline-block" }}>
-              <img
-                src="https://cdn.poehali.dev/projects/f7bc0a31-be8b-44e8-86fe-6d14ed2a2b60/bucket/897bf4db-2496-4791-9031-ea63fa80b61e.png"
-                alt="Азбука"
-                style={{
-                  width: "clamp(180px, 28vw, 280px)",
-                  height: "auto",
-                  borderRadius: "14px",
-                  boxShadow: "0 20px 60px rgba(100,60,200,0.35), 0 6px 20px rgba(0,0,0,0.18)",
-                  transform: "rotate(-3deg)",
-                  display: "block",
-                }}
-              />
-              <div style={{
-                position: "absolute",
-                top: "8%", left: "12%",
-                width: "28%", height: "18%",
-                background: "rgba(255,255,255,0.38)",
-                borderRadius: "50%",
-                transform: "rotate(-20deg)",
-              }} />
-            </div>
+            <img
+              src="https://cdn.poehali.dev/projects/f7bc0a31-be8b-44e8-86fe-6d14ed2a2b60/bucket/9b0880ca-224e-4d5f-a8df-6fd3b0be86e0.jpg"
+              alt="Азбука"
+              style={{
+                width: "clamp(200px, 30vw, 320px)",
+                height: "auto",
+                borderRadius: "16px",
+                boxShadow: "0 24px 70px rgba(100,60,200,0.38), 0 8px 24px rgba(0,0,0,0.18)",
+                display: "block",
+              }}
+            />
           </div>
         </div>
 
@@ -373,8 +370,7 @@ export default function Index() {
             color: "#555",
             lineHeight: 1.7,
           }}>
-            33 буквы выучены!<br />
-            Нажимай на любую букву — она оживёт! ✨
+            33 буквы выучены! ✨
           </p>
           <div style={{
             marginTop: "18px",
