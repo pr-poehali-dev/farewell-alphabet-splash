@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const ALPHABET = [
   "А","Б","В","Г","Д","Е","Ё","Ж","З","И","Й","К","Л","М","Н","О","П","Р","С","Т","У","Ф","Х","Ц","Ч","Ш","Щ","Ъ","Ы","Ь","Э","Ю","Я"
@@ -96,9 +96,22 @@ function useConfetti() {
   return pieces;
 }
 
+const INITIAL_POSITIONS = [
+  { x: 3,  y: 2  }, { x: 18, y: 7  }, { x: 55, y: 1  }, { x: 52, y: 5  },
+  { x: 68, y: 2  }, { x: 80, y: 8  }, { x: 90, y: 3  }, { x: 8,  y: 18 },
+  { x: 58, y: 14 }, { x: 47, y: 20 }, { x: 63, y: 13 }, { x: 76, y: 19 },
+  { x: 92, y: 16 }, { x: 2,  y: 33 }, { x: 55, y: 40 }, { x: 70, y: 36 },
+  { x: 55, y: 31 }, { x: 71, y: 38 }, { x: 87, y: 34 }, { x: 6,  y: 52 },
+  { x: 22, y: 57 }, { x: 44, y: 50 }, { x: 60, y: 55 }, { x: 78, y: 51 },
+  { x: 91, y: 56 }, { x: 10, y: 70 }, { x: 29, y: 74 }, { x: 50, y: 68 },
+  { x: 66, y: 73 }, { x: 82, y: 69 }, { x: 4,  y: 85 }, { x: 38, y: 89 },
+  { x: 72, y: 86 },
+];
+
 export default function Index() {
   const [clickedLetter, setClickedLetter] = useState<string | null>(null);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const [letterPositions, setLetterPositions] = useState<{x: number, y: number}[]>(INITIAL_POSITIONS);
   const [balloons] = useState<Balloon[]>(() =>
     Array.from({ length: 14 }, (_, i) => ({
       id: i,
@@ -110,11 +123,40 @@ export default function Index() {
     }))
   );
   const confetti = useConfetti();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const draggingIdx = useRef<number | null>(null);
+  const dragOffset = useRef<{x: number, y: number}>({ x: 0, y: 0 });
 
   const handleLetterClick = (letter: string) => {
     setClickedLetter(letter);
     setTimeout(() => setClickedLetter(null), 700);
   };
+
+  const getContainerRect = () => containerRef.current?.getBoundingClientRect();
+
+  const startDrag = (idx: number, clientX: number, clientY: number) => {
+    const rect = getContainerRect();
+    if (!rect) return;
+    draggingIdx.current = idx;
+    const pos = letterPositions[idx];
+    const currentPx = { x: (pos.x / 100) * rect.width, y: (pos.y / 100) * rect.height };
+    dragOffset.current = { x: clientX - rect.left - currentPx.x, y: clientY - rect.top - currentPx.y };
+  };
+
+  const moveDrag = (clientX: number, clientY: number) => {
+    if (draggingIdx.current === null) return;
+    const rect = getContainerRect();
+    if (!rect) return;
+    const x = Math.min(95, Math.max(0, ((clientX - rect.left - dragOffset.current.x) / rect.width) * 100));
+    const y = Math.min(95, Math.max(0, ((clientY - rect.top - dragOffset.current.y) / rect.height) * 100));
+    setLetterPositions(prev => {
+      const next = [...prev];
+      next[draggingIdx.current!] = { x, y };
+      return next;
+    });
+  };
+
+  const endDrag = () => { draggingIdx.current = null; };
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: "linear-gradient(135deg, #fff9c4 0%, #ffd6e0 30%, #c8f5ff 60%, #d4f5c4 100%)" }}>
@@ -231,38 +273,35 @@ export default function Index() {
         </div>
 
         {/* Книга в центре + буквы в разнобой вокруг */}
-        <div style={{
-          position: "relative",
-          width: "min(820px, 100%)",
-          height: "clamp(420px, 65vw, 620px)",
-          marginBottom: "32px",
-        }}>
-          {/* Буквы — абсолютно, в разнобой вокруг книги */}
+        <div
+          ref={containerRef}
+          onMouseMove={e => moveDrag(e.clientX, e.clientY)}
+          onMouseUp={endDrag}
+          onMouseLeave={endDrag}
+          onTouchMove={e => { e.preventDefault(); moveDrag(e.touches[0].clientX, e.touches[0].clientY); }}
+          onTouchEnd={endDrag}
+          style={{
+            position: "relative",
+            width: "min(820px, 100%)",
+            height: "clamp(420px, 65vw, 620px)",
+            marginBottom: "32px",
+            touchAction: "none",
+          }}
+        >
+          {/* Буквы — перетаскиваемые */}
           {ALPHABET.map((letter, idx) => {
             const isHovered = hoveredIdx === idx;
             const isClicked = clickedLetter === letter;
             const color = RAINBOW[idx];
-
-            // 33 буквы хаотично по всей заставке
-            // Картинка занимает ~x:5-45%, y:5-40% — буквы выведены за эту зону
-            const allPos = [
-              { x: 3,  y: 2  }, { x: 18, y: 7  }, { x: 55, y: 1  }, { x: 52, y: 5  },
-              { x: 68, y: 2  }, { x: 80, y: 8  }, { x: 90, y: 3  }, { x: 8,  y: 18 },
-              { x: 58, y: 14 }, { x: 47, y: 20 }, { x: 63, y: 13 }, { x: 76, y: 19 },
-              { x: 92, y: 16 }, { x: 2,  y: 33 }, { x: 55, y: 40 }, { x: 70, y: 36 },
-              { x: 55, y: 31 }, { x: 71, y: 38 }, { x: 87, y: 34 }, { x: 6,  y: 52 },
-              { x: 22, y: 57 }, { x: 44, y: 50 }, { x: 60, y: 55 }, { x: 78, y: 51 },
-              { x: 91, y: 56 }, { x: 10, y: 70 }, { x: 29, y: 74 }, { x: 50, y: 68 },
-              { x: 66, y: 73 }, { x: 82, y: 69 }, { x: 4,  y: 85 }, { x: 38, y: 89 },
-              { x: 72, y: 86 },
-            ];
-            const pos = allPos[idx] || { x: 50, y: 50 };
+            const pos = letterPositions[idx] || { x: 50, y: 50 };
             const rotate = [-18, 12, -8, 22, -15, 8, -25, 18, -10, 20, -5, 15, -20, 10, -12, 25, -7, 16, -22, 9, -14, 19, -6, 23, -11, 17, -3, 21, -16, 7, -24, 13, -9][idx] || 0;
             const size = [68, 64, 72, 60, 74, 62, 70, 66, 68, 64, 72, 60, 74, 62, 70, 66, 68, 64, 72, 60, 74, 62, 70, 66, 68, 64, 72, 60, 74, 62, 70, 66, 68][idx] || 66;
 
             return (
               <button
                 key={letter}
+                onMouseDown={e => { e.preventDefault(); startDrag(idx, e.clientX, e.clientY); }}
+                onTouchStart={e => { startDrag(idx, e.touches[0].clientX, e.touches[0].clientY); }}
                 onClick={() => handleLetterClick(letter)}
                 onMouseEnter={() => setHoveredIdx(idx)}
                 onMouseLeave={() => setHoveredIdx(null)}
@@ -281,8 +320,8 @@ export default function Index() {
                     ? `linear-gradient(135deg, ${color}ee, ${color}bb)`
                     : `${color}22`,
                   color: isHovered || isClicked ? "#fff" : color,
-                  cursor: "pointer",
-                  transition: "all 0.2s cubic-bezier(.34,1.56,.64,1)",
+                  cursor: draggingIdx.current === idx ? "grabbing" : "grab",
+                  transition: draggingIdx.current === idx ? "none" : "all 0.2s cubic-bezier(.34,1.56,.64,1)",
                   transform: isClicked
                     ? `rotate(${rotate}deg) scale(1.5)`
                     : isHovered
@@ -294,7 +333,7 @@ export default function Index() {
                   outline: "none",
                   overflow: "hidden",
                   userSelect: "none",
-                  zIndex: isHovered || isClicked ? 8 : 3,
+                  zIndex: draggingIdx.current === idx ? 20 : isHovered || isClicked ? 8 : 3,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
