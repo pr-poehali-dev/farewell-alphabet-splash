@@ -111,7 +111,12 @@ const INITIAL_POSITIONS = [
 export default function Index() {
   const [clickedLetter, setClickedLetter] = useState<string | null>(null);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-  const [letterPositions, setLetterPositions] = useState<{x: number, y: number}[]>(INITIAL_POSITIONS);
+  const [letterPositions, setLetterPositions] = useState<{x: number, y: number}[]>(() => {
+    try {
+      const saved = localStorage.getItem("letterPositions");
+      return saved ? JSON.parse(saved) : INITIAL_POSITIONS;
+    } catch { return INITIAL_POSITIONS; }
+  });
   const [balloons] = useState<Balloon[]>(() =>
     Array.from({ length: 14 }, (_, i) => ({
       id: i,
@@ -156,7 +161,13 @@ export default function Index() {
     });
   };
 
-  const endDrag = () => { draggingIdx.current = null; };
+  const endDrag = () => {
+    draggingIdx.current = null;
+    setLetterPositions(prev => {
+      localStorage.setItem("letterPositions", JSON.stringify(prev));
+      return prev;
+    });
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: "linear-gradient(135deg, #fff9c4 0%, #ffd6e0 30%, #c8f5ff 60%, #d4f5c4 100%)" }}>
