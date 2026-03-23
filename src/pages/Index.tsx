@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 const ALPHABET = [
   "А","Б","В","Г","Д","Е","Ё","Ж","З","И","Й","К","Л","М","Н","О","П","Р","С","Т","У","Ф","Х","Ц","Ч","Ш","Щ","Ъ","Ы","Ь","Э","Ю","Я"
@@ -96,27 +96,9 @@ function useConfetti() {
   return pieces;
 }
 
-const INITIAL_POSITIONS = [
-  { x: 3,  y: 2  }, { x: 18, y: 7  }, { x: 55, y: 1  }, { x: 52, y: 5  },
-  { x: 68, y: 2  }, { x: 80, y: 8  }, { x: 90, y: 3  }, { x: 8,  y: 18 },
-  { x: 58, y: 14 }, { x: 47, y: 20 }, { x: 63, y: 13 }, { x: 76, y: 19 },
-  { x: 92, y: 16 }, { x: 2,  y: 33 }, { x: 55, y: 40 }, { x: 70, y: 36 },
-  { x: 55, y: 31 }, { x: 71, y: 38 }, { x: 87, y: 34 }, { x: 6,  y: 52 },
-  { x: 22, y: 57 }, { x: 44, y: 50 }, { x: 60, y: 55 }, { x: 78, y: 51 },
-  { x: 91, y: 56 }, { x: 10, y: 70 }, { x: 29, y: 74 }, { x: 50, y: 68 },
-  { x: 66, y: 73 }, { x: 82, y: 69 }, { x: 4,  y: 85 }, { x: 38, y: 89 },
-  { x: 72, y: 86 },
-];
-
 export default function Index() {
   const [clickedLetter, setClickedLetter] = useState<string | null>(null);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-  const [letterPositions, setLetterPositions] = useState<{x: number, y: number}[]>(() => {
-    try {
-      const saved = localStorage.getItem("letterPositions");
-      return saved ? JSON.parse(saved) : INITIAL_POSITIONS;
-    } catch { return INITIAL_POSITIONS; }
-  });
   const [balloons] = useState<Balloon[]>(() =>
     Array.from({ length: 14 }, (_, i) => ({
       id: i,
@@ -128,45 +110,10 @@ export default function Index() {
     }))
   );
   const confetti = useConfetti();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const draggingIdx = useRef<number | null>(null);
-  const dragOffset = useRef<{x: number, y: number}>({ x: 0, y: 0 });
 
   const handleLetterClick = (letter: string) => {
     setClickedLetter(letter);
     setTimeout(() => setClickedLetter(null), 700);
-  };
-
-  const getContainerRect = () => containerRef.current?.getBoundingClientRect();
-
-  const startDrag = (idx: number, clientX: number, clientY: number) => {
-    const rect = getContainerRect();
-    if (!rect) return;
-    draggingIdx.current = idx;
-    const pos = letterPositions[idx];
-    const currentPx = { x: (pos.x / 100) * rect.width, y: (pos.y / 100) * rect.height };
-    dragOffset.current = { x: clientX - rect.left - currentPx.x, y: clientY - rect.top - currentPx.y };
-  };
-
-  const moveDrag = (clientX: number, clientY: number) => {
-    if (draggingIdx.current === null) return;
-    const rect = getContainerRect();
-    if (!rect) return;
-    const x = Math.min(95, Math.max(0, ((clientX - rect.left - dragOffset.current.x) / rect.width) * 100));
-    const y = Math.min(95, Math.max(0, ((clientY - rect.top - dragOffset.current.y) / rect.height) * 100));
-    setLetterPositions(prev => {
-      const next = [...prev];
-      next[draggingIdx.current!] = { x, y };
-      return next;
-    });
-  };
-
-  const endDrag = () => {
-    draggingIdx.current = null;
-    setLetterPositions(prev => {
-      localStorage.setItem("letterPositions", JSON.stringify(prev));
-      return prev;
-    });
   };
 
   return (
@@ -265,12 +212,11 @@ export default function Index() {
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
-            lineHeight: 1.5,
+            lineHeight: 1.25,
             marginBottom: "6px",
-            paddingBottom: "8px",
             filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
           }}>
-            АЗБУКА ПРОЩАЙ!
+            Азбука, прощай!
           </h1>
           <p style={{
             fontFamily: "'Rubik', sans-serif",
@@ -284,35 +230,37 @@ export default function Index() {
         </div>
 
         {/* Книга в центре + буквы в разнобой вокруг */}
-        <div
-          ref={containerRef}
-          onMouseMove={e => moveDrag(e.clientX, e.clientY)}
-          onMouseUp={endDrag}
-          onMouseLeave={endDrag}
-          onTouchMove={e => { e.preventDefault(); moveDrag(e.touches[0].clientX, e.touches[0].clientY); }}
-          onTouchEnd={endDrag}
-          style={{
-            position: "relative",
-            width: "min(820px, 100%)",
-            height: "clamp(420px, 65vw, 620px)",
-            marginBottom: "32px",
-            touchAction: "none",
-          }}
-        >
-          {/* Буквы — перетаскиваемые */}
+        <div style={{
+          position: "relative",
+          width: "min(820px, 100%)",
+          height: "clamp(420px, 65vw, 620px)",
+          marginBottom: "32px",
+        }}>
+          {/* Буквы — абсолютно, в разнобой вокруг книги */}
           {ALPHABET.map((letter, idx) => {
             const isHovered = hoveredIdx === idx;
             const isClicked = clickedLetter === letter;
             const color = RAINBOW[idx];
-            const pos = letterPositions[idx] || { x: 50, y: 50 };
+
+            // Позиции в разнобой по кругу, избегая центр (35-65% по x, 30-70% по y)
+            const positions = [
+              { x: 2,  y: 2  }, { x: 12, y: 0  }, { x: 22, y: 3  }, { x: 78, y: 1  },
+              { x: 88, y: 3  }, { x: 94, y: 0  }, { x: 5,  y: 14 }, { x: 90, y: 12 },
+              { x: 1,  y: 26 }, { x: 92, y: 24 }, { x: 3,  y: 38 }, { x: 91, y: 36 },
+              { x: 0,  y: 50 }, { x: 93, y: 50 }, { x: 2,  y: 62 }, { x: 92, y: 63 },
+              { x: 4,  y: 74 }, { x: 90, y: 75 }, { x: 8,  y: 86 }, { x: 88, y: 87 },
+              { x: 18, y: 93 }, { x: 30, y: 96 }, { x: 42, y: 94 }, { x: 54, y: 96 },
+              { x: 65, y: 93 }, { x: 76, y: 90 }, { x: 32, y: 4  }, { x: 44, y: 2  },
+              { x: 56, y: 5  }, { x: 68, y: 3  }, { x: 15, y: 50 }, { x: 80, y: 50 },
+              { x: 48, y: 92 },
+            ];
+            const pos = positions[idx] || { x: idx * 3 % 90, y: idx * 7 % 90 };
             const rotate = [-18, 12, -8, 22, -15, 8, -25, 18, -10, 20, -5, 15, -20, 10, -12, 25, -7, 16, -22, 9, -14, 19, -6, 23, -11, 17, -3, 21, -16, 7, -24, 13, -9][idx] || 0;
-            const size = [68, 64, 72, 60, 74, 62, 70, 66, 68, 64, 72, 60, 74, 62, 70, 66, 68, 64, 72, 60, 74, 62, 70, 66, 68, 64, 72, 60, 74, 62, 70, 66, 68][idx] || 66;
+            const size = [52, 48, 56, 44, 58, 46, 54, 50, 52, 48, 56, 44, 58, 46, 54, 50, 52, 48, 56, 44, 58, 46, 54, 50, 52, 48, 56, 44, 58, 46, 54, 50, 52][idx] || 50;
 
             return (
               <button
                 key={letter}
-                onMouseDown={e => { e.preventDefault(); startDrag(idx, e.clientX, e.clientY); }}
-                onTouchStart={e => { startDrag(idx, e.touches[0].clientX, e.touches[0].clientY); }}
                 onClick={() => handleLetterClick(letter)}
                 onMouseEnter={() => setHoveredIdx(idx)}
                 onMouseLeave={() => setHoveredIdx(null)}
@@ -331,8 +279,8 @@ export default function Index() {
                     ? `linear-gradient(135deg, ${color}ee, ${color}bb)`
                     : `${color}22`,
                   color: isHovered || isClicked ? "#fff" : color,
-                  cursor: draggingIdx.current === idx ? "grabbing" : "grab",
-                  transition: draggingIdx.current === idx ? "none" : "all 0.2s cubic-bezier(.34,1.56,.64,1)",
+                  cursor: "pointer",
+                  transition: "all 0.2s cubic-bezier(.34,1.56,.64,1)",
                   transform: isClicked
                     ? `rotate(${rotate}deg) scale(1.5)`
                     : isHovered
@@ -344,7 +292,7 @@ export default function Index() {
                   outline: "none",
                   overflow: "hidden",
                   userSelect: "none",
-                  zIndex: draggingIdx.current === idx ? 20 : isHovered || isClicked ? 8 : 3,
+                  zIndex: isHovered || isClicked ? 8 : 3,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -367,8 +315,8 @@ export default function Index() {
           {/* Книга — строго по центру */}
           <div style={{
             position: "absolute",
-            top: "20%",
-            left: "25%",
+            top: "38%",
+            left: "50%",
             transform: "translate(-50%, -50%)",
             zIndex: 5,
             animation: "bookFloat 3s ease-in-out infinite",
@@ -378,7 +326,7 @@ export default function Index() {
               src="https://cdn.poehali.dev/projects/f7bc0a31-be8b-44e8-86fe-6d14ed2a2b60/bucket/9b0880ca-224e-4d5f-a8df-6fd3b0be86e0.jpg"
               alt="Азбука"
               style={{
-                width: "clamp(260px, 38vw, 420px)",
+                width: "clamp(200px, 30vw, 320px)",
                 height: "auto",
                 borderRadius: "16px",
                 boxShadow: "0 24px 70px rgba(100,60,200,0.38), 0 8px 24px rgba(0,0,0,0.18)",
@@ -388,25 +336,57 @@ export default function Index() {
           </div>
         </div>
 
-        {/* Текст без квадратика */}
-        <div style={{ textAlign: "center", marginTop: "24px" }}>
+        {/* Блок учебника */}
+        <div style={{
+          background: "rgba(255,255,255,0.88)",
+          borderRadius: "28px",
+          padding: "28px 36px",
+          maxWidth: "500px",
+          width: "100%",
+          boxShadow: "0 10px 40px rgba(100,60,200,0.18)",
+          border: "3px solid #FFD700",
+          textAlign: "center",
+          backdropFilter: "blur(10px)",
+          position: "relative",
+          overflow: "hidden",
+        }}>
+          {/* Радужная полоска сверху */}
+          <div style={{
+            position: "absolute", top: 0, left: 0, right: 0, height: "7px",
+            background: "linear-gradient(90deg, #FF3B3B, #FF6B2B, #FFD700, #4CAF50, #2196F3, #9C27B0)",
+          }} />
+          <div style={{ fontSize: "3.5rem", marginBottom: "12px" }}>📖</div>
           <h2 style={{
             fontFamily: "'Pacifico', cursive",
-            fontSize: "clamp(1.4rem, 3.5vw, 2rem)",
+            fontSize: "1.6rem",
             color: "#6a3e9a",
-            marginBottom: "8px",
-            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
+            marginBottom: "10px",
           }}>
             Наша азбука
           </h2>
           <p style={{
             fontFamily: "'Rubik', sans-serif",
-            fontSize: "1.1rem",
-            color: "#444",
+            fontSize: "1.05rem",
+            color: "#555",
             lineHeight: 1.7,
           }}>
             33 буквы выучены! ✨
           </p>
+          <div style={{
+            marginTop: "18px",
+            display: "flex",
+            justifyContent: "center",
+            gap: "10px",
+            flexWrap: "wrap",
+          }}>
+            {["🎈","🎊","⭐","🎉","🌈","🎀","✨","🎁"].map((emoji, i) => (
+              <span key={i} style={{
+                fontSize: "1.7rem",
+                animation: `bounce 1.6s ease-in-out ${i * 0.18}s infinite`,
+                display: "inline-block",
+              }}>{emoji}</span>
+            ))}
+          </div>
         </div>
 
         {/* Подпись */}
