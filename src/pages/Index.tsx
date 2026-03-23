@@ -204,44 +204,7 @@ export default function Index() {
       <div className="relative flex flex-col items-center min-h-screen py-8 px-4" style={{ zIndex: 10 }}>
 
         {/* Заголовок */}
-        <div className="text-center mb-8 mt-4">
-          {/* Книга Азбуки */}
-          <div style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: "16px",
-          }}>
-            <div style={{
-              position: "relative",
-              display: "inline-block",
-              animation: "bookFloat 3s ease-in-out infinite",
-            }}>
-              <img
-                src="https://cdn.poehali.dev/projects/f7bc0a31-be8b-44e8-86fe-6d14ed2a2b60/bucket/897bf4db-2496-4791-9031-ea63fa80b61e.png"
-                alt="Азбука"
-                style={{
-                  width: "clamp(140px, 22vw, 200px)",
-                  height: "auto",
-                  borderRadius: "12px",
-                  boxShadow: "0 16px 48px rgba(100,60,200,0.28), 0 4px 12px rgba(0,0,0,0.14)",
-                  transform: "rotate(-4deg)",
-                  display: "block",
-                }}
-              />
-              {/* Блеск */}
-              <div style={{
-                position: "absolute",
-                top: "8%",
-                left: "12%",
-                width: "28%",
-                height: "18%",
-                background: "rgba(255,255,255,0.38)",
-                borderRadius: "50%",
-                transform: "rotate(-20deg)",
-                pointerEvents: "none",
-              }} />
-            </div>
-          </div>
+        <div className="text-center mb-6 mt-4">
           <h1 style={{
             fontFamily: "'Pacifico', cursive",
             fontSize: "clamp(1.9rem, 5.5vw, 3.8rem)",
@@ -250,7 +213,7 @@ export default function Index() {
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
             lineHeight: 1.25,
-            marginBottom: "10px",
+            marginBottom: "6px",
             filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
           }}>
             Азбука, прощай!
@@ -266,66 +229,114 @@ export default function Index() {
           </p>
         </div>
 
-        {/* Сетка букв */}
+        {/* Книга в центре + буквы вокруг */}
         <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(70px, 1fr))",
-          gap: "10px",
-          maxWidth: "780px",
-          width: "100%",
+          position: "relative",
+          width: "min(780px, 100%)",
           marginBottom: "32px",
         }}>
-          {ALPHABET.map((letter, idx) => {
-            const isHovered = hoveredIdx === idx;
-            const isClicked = clickedLetter === letter;
-            const color = RAINBOW[idx];
-            return (
-              <button
-                key={letter}
-                onClick={() => handleLetterClick(letter)}
-                onMouseEnter={() => setHoveredIdx(idx)}
-                onMouseLeave={() => setHoveredIdx(null)}
+          {/* Буквы — сетка вокруг книги */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(11, 1fr)",
+            gridTemplateRows: "repeat(7, 1fr)",
+            gap: "6px",
+            width: "100%",
+          }}>
+            {ALPHABET.map((letter, idx) => {
+              const isHovered = hoveredIdx === idx;
+              const isClicked = clickedLetter === letter;
+              const color = RAINBOW[idx];
+
+              // Центральная зона (строки 2-6, колонки 4-8) — там книга
+              const col = (idx % 11) + 1;
+              const row = Math.floor(idx / 11) + 1;
+              const inBookZone = row >= 2 && row <= 6 && col >= 4 && col <= 8;
+
+              return (
+                <button
+                  key={letter}
+                  onClick={() => handleLetterClick(letter)}
+                  onMouseEnter={() => setHoveredIdx(idx)}
+                  onMouseLeave={() => setHoveredIdx(null)}
+                  style={{
+                    fontFamily: "'Rubik', sans-serif",
+                    fontWeight: 900,
+                    fontSize: isClicked ? "1.8rem" : isHovered ? "1.5rem" : "1.25rem",
+                    width: "100%",
+                    aspectRatio: "1",
+                    borderRadius: "16px",
+                    border: `3px solid ${color}`,
+                    background: isHovered || isClicked
+                      ? `linear-gradient(135deg, ${color}ee, ${color}bb)`
+                      : `${color}1a`,
+                    color: isHovered || isClicked ? "#fff" : color,
+                    cursor: "pointer",
+                    transition: "all 0.2s cubic-bezier(.34,1.56,.64,1)",
+                    transform: isClicked
+                      ? "scale(1.4) rotate(-6deg)"
+                      : isHovered
+                        ? "scale(1.18) rotate(4deg)"
+                        : "scale(1)",
+                    boxShadow: isHovered || isClicked
+                      ? `0 8px 24px ${color}88`
+                      : `0 3px 10px ${color}33`,
+                    outline: "none",
+                    position: "relative",
+                    overflow: "hidden",
+                    userSelect: "none",
+                    visibility: inBookZone ? "hidden" : "visible",
+                    pointerEvents: inBookZone ? "none" : "auto",
+                  }}
+                >
+                  {isClicked && (
+                    <span style={{
+                      position: "absolute", inset: 0,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: "1.2rem",
+                      animation: "popStar 0.65s ease-out forwards",
+                      pointerEvents: "none",
+                    }}>⭐</span>
+                  )}
+                  {letter}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Книга поверх сетки, по центру */}
+          <div style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 5,
+            animation: "bookFloat 3s ease-in-out infinite",
+            pointerEvents: "none",
+          }}>
+            <div style={{ position: "relative", display: "inline-block" }}>
+              <img
+                src="https://cdn.poehali.dev/projects/f7bc0a31-be8b-44e8-86fe-6d14ed2a2b60/bucket/897bf4db-2496-4791-9031-ea63fa80b61e.png"
+                alt="Азбука"
                 style={{
-                  fontFamily: "'Rubik', sans-serif",
-                  fontWeight: 900,
-                  fontSize: isClicked ? "2.6rem" : isHovered ? "2.1rem" : "1.75rem",
-                  width: "100%",
-                  aspectRatio: "1",
-                  borderRadius: "20px",
-                  border: `3px solid ${color}`,
-                  background: isHovered || isClicked
-                    ? `linear-gradient(135deg, ${color}ee, ${color}bb)`
-                    : `${color}1a`,
-                  color: isHovered || isClicked ? "#fff" : color,
-                  cursor: "pointer",
-                  transition: "all 0.2s cubic-bezier(.34,1.56,.64,1)",
-                  transform: isClicked
-                    ? "scale(1.4) rotate(-6deg)"
-                    : isHovered
-                      ? "scale(1.18) rotate(4deg)"
-                      : "scale(1)",
-                  boxShadow: isHovered || isClicked
-                    ? `0 8px 24px ${color}88`
-                    : `0 3px 10px ${color}33`,
-                  outline: "none",
-                  position: "relative",
-                  overflow: "hidden",
-                  userSelect: "none",
+                  width: "clamp(180px, 28vw, 280px)",
+                  height: "auto",
+                  borderRadius: "14px",
+                  boxShadow: "0 20px 60px rgba(100,60,200,0.35), 0 6px 20px rgba(0,0,0,0.18)",
+                  transform: "rotate(-3deg)",
+                  display: "block",
                 }}
-              >
-                {isClicked && (
-                  <span style={{
-                    position: "absolute", inset: 0,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: "1.4rem",
-                    animation: "popStar 0.65s ease-out forwards",
-                    pointerEvents: "none",
-                  }}>⭐</span>
-                )}
-                {letter}
-              </button>
-            );
-          })}
+              />
+              <div style={{
+                position: "absolute",
+                top: "8%", left: "12%",
+                width: "28%", height: "18%",
+                background: "rgba(255,255,255,0.38)",
+                borderRadius: "50%",
+                transform: "rotate(-20deg)",
+              }} />
+            </div>
+          </div>
         </div>
 
         {/* Блок учебника */}
