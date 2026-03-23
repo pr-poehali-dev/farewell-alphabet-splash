@@ -216,7 +216,7 @@ export default function Index() {
             marginBottom: "6px",
             filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
           }}>
-            Азбука, прощай!
+            АЗБУКА ПРОЩАЙ!
           </h1>
           <p style={{
             fontFamily: "'Rubik', sans-serif",
