@@ -315,7 +315,7 @@ export default function Index() {
           {/* Книга — строго по центру */}
           <div style={{
             position: "absolute",
-            top: "38%",
+            top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
             zIndex: 5,
@@ -326,7 +326,7 @@ export default function Index() {
               src="https://cdn.poehali.dev/projects/f7bc0a31-be8b-44e8-86fe-6d14ed2a2b60/bucket/9b0880ca-224e-4d5f-a8df-6fd3b0be86e0.jpg"
               alt="Азбука"
               style={{
-                width: "clamp(200px, 30vw, 320px)",
+                width: "clamp(280px, 42vw, 480px)",
                 height: "auto",
                 borderRadius: "16px",
                 boxShadow: "0 24px 70px rgba(100,60,200,0.38), 0 8px 24px rgba(0,0,0,0.18)",
