@@ -256,7 +256,7 @@ export default function Index() {
             ];
             const pos = positions[idx] || { x: idx * 3 % 90, y: idx * 7 % 90 };
             const rotate = [-18, 12, -8, 22, -15, 8, -25, 18, -10, 20, -5, 15, -20, 10, -12, 25, -7, 16, -22, 9, -14, 19, -6, 23, -11, 17, -3, 21, -16, 7, -24, 13, -9][idx] || 0;
-            const size = [52, 48, 56, 44, 58, 46, 54, 50, 52, 48, 56, 44, 58, 46, 54, 50, 52, 48, 56, 44, 58, 46, 54, 50, 52, 48, 56, 44, 58, 46, 54, 50, 52][idx] || 50;
+            const size = [68, 64, 72, 60, 74, 62, 70, 66, 68, 64, 72, 60, 74, 62, 70, 66, 68, 64, 72, 60, 74, 62, 70, 66, 68, 64, 72, 60, 74, 62, 70, 66, 68][idx] || 66;
 
             return (
               <button
@@ -316,7 +316,7 @@ export default function Index() {
           <div style={{
             position: "absolute",
             top: "20%",
-            left: "35%",
+            left: "25%",
             transform: "translate(-50%, -50%)",
             zIndex: 5,
             animation: "bookFloat 3s ease-in-out infinite",
