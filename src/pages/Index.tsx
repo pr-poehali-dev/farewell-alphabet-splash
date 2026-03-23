@@ -205,7 +205,43 @@ export default function Index() {
 
         {/* Заголовок */}
         <div className="text-center mb-8 mt-4">
-          <div style={{ fontSize: "3.5rem", marginBottom: "8px", animation: "bounce 1.4s ease-in-out infinite" }}>📚</div>
+          {/* Книга Азбуки */}
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: "16px",
+          }}>
+            <div style={{
+              position: "relative",
+              display: "inline-block",
+              animation: "bookFloat 3s ease-in-out infinite",
+            }}>
+              <img
+                src="https://cdn.poehali.dev/projects/f7bc0a31-be8b-44e8-86fe-6d14ed2a2b60/bucket/897bf4db-2496-4791-9031-ea63fa80b61e.png"
+                alt="Азбука"
+                style={{
+                  width: "clamp(140px, 22vw, 200px)",
+                  height: "auto",
+                  borderRadius: "12px",
+                  boxShadow: "0 16px 48px rgba(100,60,200,0.28), 0 4px 12px rgba(0,0,0,0.14)",
+                  transform: "rotate(-4deg)",
+                  display: "block",
+                }}
+              />
+              {/* Блеск */}
+              <div style={{
+                position: "absolute",
+                top: "8%",
+                left: "12%",
+                width: "28%",
+                height: "18%",
+                background: "rgba(255,255,255,0.38)",
+                borderRadius: "50%",
+                transform: "rotate(-20deg)",
+                pointerEvents: "none",
+              }} />
+            </div>
+          </div>
           <h1 style={{
             fontFamily: "'Pacifico', cursive",
             fontSize: "clamp(1.9rem, 5.5vw, 3.8rem)",
@@ -381,6 +417,11 @@ export default function Index() {
           0%   { opacity: 1; transform: scale(0.4); }
           60%  { opacity: 1; transform: scale(1.5); }
           100% { opacity: 0; transform: scale(2.2); }
+        }
+        @keyframes bookFloat {
+          0%   { transform: rotate(-4deg) translateY(0px); }
+          50%  { transform: rotate(-2deg) translateY(-12px); }
+          100% { transform: rotate(-4deg) translateY(0px); }
         }
       `}</style>
     </div>
