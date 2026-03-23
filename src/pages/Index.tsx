@@ -270,7 +270,7 @@ export default function Index() {
             paddingBottom: "8px",
             filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
           }}>
-            АЗБУКА, ПРОЩАЙ!
+            АЗБУКА ПРОЩАЙ!
           </h1>
           <p style={{
             fontFamily: "'Rubik', sans-serif",
