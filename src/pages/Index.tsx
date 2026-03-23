@@ -175,7 +175,24 @@ export default function Index() {
   };
 
   const [gifStatus, setGifStatus] = useState<"idle" | "recording" | "processing">("idle");
+  const [pngLoading, setPngLoading] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
+
+  const downloadPng = useCallback(async () => {
+    if (!pageRef.current) return;
+    setPngLoading(true);
+    const canvas = await html2canvas(pageRef.current, { scale: 2, useCORS: true, logging: false });
+    canvas.toBlob(blob => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "азбука-прощай.png";
+      a.click();
+      URL.revokeObjectURL(url);
+      setPngLoading(false);
+    }, "image/png");
+  }, []);
 
   const downloadGif = useCallback(async () => {
     if (!pageRef.current) return;
@@ -421,6 +438,29 @@ export default function Index() {
               }}
             />
           </div>
+        </div>
+
+        {/* Кнопки скачать */}
+        <div style={{ textAlign: "center", marginBottom: "12px", display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+          <button
+            onClick={downloadPng}
+            disabled={pngLoading}
+            style={{
+              fontFamily: "'Rubik', sans-serif",
+              fontWeight: 700,
+              fontSize: "1rem",
+              padding: "10px 24px",
+              borderRadius: "50px",
+              border: "none",
+              background: pngLoading ? "#ccc" : "linear-gradient(135deg, #4CAF50, #2196F3)",
+              color: "#fff",
+              cursor: pngLoading ? "not-allowed" : "pointer",
+              boxShadow: "0 4px 16px rgba(33,150,243,0.3)",
+              transition: "all 0.2s",
+            }}
+          >
+            {pngLoading ? "⏳ Сохраняю..." : "🖼 Скачать как картинку"}
+          </button>
         </div>
 
         {/* Кнопка скачать GIF */}
