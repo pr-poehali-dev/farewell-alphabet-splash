@@ -336,57 +336,25 @@ export default function Index() {
           </div>
         </div>
 
-        {/* Блок учебника */}
-        <div style={{
-          background: "rgba(255,255,255,0.88)",
-          borderRadius: "28px",
-          padding: "28px 36px",
-          maxWidth: "500px",
-          width: "100%",
-          boxShadow: "0 10px 40px rgba(100,60,200,0.18)",
-          border: "3px solid #FFD700",
-          textAlign: "center",
-          backdropFilter: "blur(10px)",
-          position: "relative",
-          overflow: "hidden",
-        }}>
-          {/* Радужная полоска сверху */}
-          <div style={{
-            position: "absolute", top: 0, left: 0, right: 0, height: "7px",
-            background: "linear-gradient(90deg, #FF3B3B, #FF6B2B, #FFD700, #4CAF50, #2196F3, #9C27B0)",
-          }} />
-          <div style={{ fontSize: "3.5rem", marginBottom: "12px" }}>📖</div>
+        {/* Текст без квадратика */}
+        <div style={{ textAlign: "center" }}>
           <h2 style={{
             fontFamily: "'Pacifico', cursive",
-            fontSize: "1.6rem",
+            fontSize: "clamp(1.4rem, 3.5vw, 2rem)",
             color: "#6a3e9a",
-            marginBottom: "10px",
+            marginBottom: "8px",
+            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
           }}>
             Наша азбука
           </h2>
           <p style={{
             fontFamily: "'Rubik', sans-serif",
-            fontSize: "1.05rem",
-            color: "#555",
+            fontSize: "1.1rem",
+            color: "#444",
             lineHeight: 1.7,
           }}>
             33 буквы выучены! ✨
           </p>
-          <div style={{
-            marginTop: "18px",
-            display: "flex",
-            justifyContent: "center",
-            gap: "10px",
-            flexWrap: "wrap",
-          }}>
-            {["🎈","🎊","⭐","🎉","🌈","🎀","✨","🎁"].map((emoji, i) => (
-              <span key={i} style={{
-                fontSize: "1.7rem",
-                animation: `bounce 1.6s ease-in-out ${i * 0.18}s infinite`,
-                display: "inline-block",
-              }}>{emoji}</span>
-            ))}
-          </div>
         </div>
 
         {/* Подпись */}
