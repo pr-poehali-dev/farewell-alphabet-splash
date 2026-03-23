@@ -315,8 +315,8 @@ export default function Index() {
           {/* Книга — строго по центру */}
           <div style={{
             position: "absolute",
-            top: "30%",
-            left: "50%",
+            top: "18%",
+            left: "38%",
             transform: "translate(-50%, -50%)",
             zIndex: 5,
             animation: "bookFloat 3s ease-in-out infinite",
